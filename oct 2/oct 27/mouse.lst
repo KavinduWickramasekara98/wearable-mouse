@@ -1,0 +1,771 @@
+   1               		.file	"mouse.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	USART_Init
+  12               	USART_Init:
+  13               	.LFB11:
+  14               		.file 1 "mouse.c"
+   1:mouse.c       **** 
+   2:mouse.c       **** 
+   3:mouse.c       **** #define F_CPU 8000000UL			/* Define frequency here its 8MHz */
+   4:mouse.c       **** #include <avr/io.h>
+   5:mouse.c       **** #include <util/delay.h>
+   6:mouse.c       **** #include <stdlib.h>
+   7:mouse.c       **** #include <stdio.h>
+   8:mouse.c       **** 
+   9:mouse.c       **** //#define USART_BAUDRATE 9600
+  10:mouse.c       **** #define BAUD_PRESCALE (((F_CPU / (USART_BAUDRATE * 16UL))) - 1)
+  11:mouse.c       **** double oldX=0;
+  12:mouse.c       **** double oldY=0;
+  13:mouse.c       **** 
+  14:mouse.c       **** void USART_Init(long USART_BAUDRATE)
+  15:mouse.c       **** {
+  15               		.loc 1 15 0
+  16               		.cfi_startproc
+  17               	.LVL0:
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  16:mouse.c       **** 	UCSRB |= (1 << RXEN) | (1 << TXEN);/* Turn on transmission and reception */
+  22               		.loc 1 16 0
+  23 0000 2AB1      		in r18,0xa
+  24 0002 2861      		ori r18,lo8(24)
+  25 0004 2AB9      		out 0xa,r18
+  17:mouse.c       **** 	UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);/* Use 8-bit character sizes */
+  26               		.loc 1 17 0
+  27 0006 20B5      		in r18,0x20
+  28 0008 2668      		ori r18,lo8(-122)
+  29 000a 20BD      		out 0x20,r18
+  18:mouse.c       **** 	UBRRL = BAUD_PRESCALE;		/* Load lower 8-bits of the baud rate value */
+  30               		.loc 1 18 0
+  31 000c 9B01      		movw r18,r22
+  32 000e AC01      		movw r20,r24
+  33 0010 84E0      		ldi r24,4
+  34               		1:
+  35 0012 220F      		lsl r18
+  36 0014 331F      		rol r19
+  37 0016 441F      		rol r20
+  38 0018 551F      		rol r21
+  39 001a 8A95      		dec r24
+  40 001c 01F4      		brne 1b
+  41 001e 60E0      		ldi r22,0
+  42 0020 72E1      		ldi r23,lo8(18)
+  43 0022 8AE7      		ldi r24,lo8(122)
+  44 0024 90E0      		ldi r25,0
+  45               	.LVL1:
+  46 0026 0E94 0000 		call __udivmodsi4
+  47 002a 8FEF      		ldi r24,lo8(-1)
+  48 002c 820F      		add r24,r18
+  49 002e 89B9      		out 0x9,r24
+  19:mouse.c       **** 	UBRRH = (BAUD_PRESCALE >> 8);	/* Load upper 8-bits*/
+  50               		.loc 1 19 0
+  51 0030 DA01      		movw r26,r20
+  52 0032 C901      		movw r24,r18
+  53 0034 0197      		sbiw r24,1
+  54 0036 A109      		sbc r26,__zero_reg__
+  55 0038 B109      		sbc r27,__zero_reg__
+  56 003a 892F      		mov r24,r25
+  57 003c 9A2F      		mov r25,r26
+  58 003e AB2F      		mov r26,r27
+  59 0040 BB27      		clr r27
+  60 0042 80BD      		out 0x20,r24
+  61 0044 0895      		ret
+  62               		.cfi_endproc
+  63               	.LFE11:
+  65               	.global	UART_RxChar
+  67               	UART_RxChar:
+  68               	.LFB12:
+  20:mouse.c       **** }
+  21:mouse.c       **** 
+  22:mouse.c       **** unsigned char UART_RxChar()
+  23:mouse.c       **** {
+  69               		.loc 1 23 0
+  70               		.cfi_startproc
+  71               	/* prologue: function */
+  72               	/* frame size = 0 */
+  73               	/* stack size = 0 */
+  74               	.L__stack_usage = 0
+  75               	.L3:
+  24:mouse.c       **** 	while ((UCSRA & (1 << RXC)) == 0);/* Wait till data is received */
+  76               		.loc 1 24 0 discriminator 1
+  77 0046 5F9B      		sbis 0xb,7
+  78 0048 00C0      		rjmp .L3
+  25:mouse.c       **** 	return(UDR);			/* Return the byte*/
+  79               		.loc 1 25 0
+  80 004a 8CB1      		in r24,0xc
+  26:mouse.c       **** }
+  81               		.loc 1 26 0
+  82 004c 0895      		ret
+  83               		.cfi_endproc
+  84               	.LFE12:
+  86               	.global	ADC_Init
+  88               	ADC_Init:
+  89               	.LFB15:
+  27:mouse.c       **** 
+  28:mouse.c       **** void UART_TxChar(char ch)
+  29:mouse.c       **** {
+  30:mouse.c       **** 	while (! (UCSRA & (1<<UDRE)));	/* Wait for empty transmit buffer*/
+  31:mouse.c       **** 	UDR = ch ;
+  32:mouse.c       **** }
+  33:mouse.c       **** 
+  34:mouse.c       **** void UART_SendString(char *str)
+  35:mouse.c       **** {
+  36:mouse.c       **** 	unsigned char j=0;
+  37:mouse.c       **** 	
+  38:mouse.c       **** 	while (str[j]!=0)		/* Send string till null */
+  39:mouse.c       **** 	{
+  40:mouse.c       **** 		UART_TxChar(str[j]);	
+  41:mouse.c       **** 		j++;
+  42:mouse.c       **** 	}
+  43:mouse.c       **** }
+  44:mouse.c       **** 
+  45:mouse.c       **** void ADC_Init() {
+  90               		.loc 1 45 0
+  91               		.cfi_startproc
+  92               	/* prologue: function */
+  93               	/* frame size = 0 */
+  94               	/* stack size = 0 */
+  95               	.L__stack_usage = 0
+  46:mouse.c       ****     DDRA = 0x00;
+  96               		.loc 1 46 0
+  97 004e 1ABA      		out 0x1a,__zero_reg__
+  47:mouse.c       **** 	ADCSRA |= (1 << ADEN); //Enable ADC (bit 7 = 1) enable ADC
+  98               		.loc 1 47 0
+  99 0050 379A      		sbi 0x6,7
+  48:mouse.c       ****     ADCSRA |= (1 << ADPS1) | (1 << ADPS0); //Set prescaller to 128 (bits 2:0 = 111)
+ 100               		.loc 1 48 0
+ 101 0052 86B1      		in r24,0x6
+ 102 0054 8360      		ori r24,lo8(3)
+ 103 0056 86B9      		out 0x6,r24
+  49:mouse.c       ****     ADMUX |= (1<<REFS0); //Selecting internal reference voltage
+ 104               		.loc 1 49 0
+ 105 0058 3E9A      		sbi 0x7,6
+ 106 005a 0895      		ret
+ 107               		.cfi_endproc
+ 108               	.LFE15:
+ 110               	.global	ADC_Read
+ 112               	ADC_Read:
+ 113               	.LFB16:
+  50:mouse.c       ****     
+  51:mouse.c       **** }
+  52:mouse.c       **** 
+  53:mouse.c       **** int ADC_Read(unsigned char channel) {
+ 114               		.loc 1 53 0
+ 115               		.cfi_startproc
+ 116               	.LVL2:
+ 117               	/* prologue: function */
+ 118               	/* frame size = 0 */
+ 119               	/* stack size = 0 */
+ 120               	.L__stack_usage = 0
+  54:mouse.c       ****     ADMUX = (ADMUX & ~0b00001111) | (channel & 0b00001111); //Copy channel bits to 3:0 position
+ 121               		.loc 1 54 0
+ 122 005c 97B1      		in r25,0x7
+ 123 005e 907F      		andi r25,lo8(-16)
+ 124 0060 8F70      		andi r24,lo8(15)
+ 125               	.LVL3:
+ 126 0062 892B      		or r24,r25
+ 127 0064 87B9      		out 0x7,r24
+  55:mouse.c       **** 	//ADMUX = 1<< REFS0 | (channel & (1<< MUX0 | 1<< MUX1 | 1<< MUX2 | 1<< MUX3 | 1<< MUX4));//select 
+  56:mouse.c       **** 	//ADCSRA |= (1 << ADEN); //Enable ADC (bit 7 = 1)
+  57:mouse.c       **** 
+  58:mouse.c       ****     ADCSRA |= (1 << ADSC); //Start taking reading (bit 6 = 1)
+ 128               		.loc 1 58 0
+ 129 0066 369A      		sbi 0x6,6
+ 130               	.L8:
+  59:mouse.c       ****     while(((ADCSRA>>ADSC) & 1) == 1) {} //Wait until bit 6 = 0
+ 131               		.loc 1 59 0 discriminator 1
+ 132 0068 3699      		sbic 0x6,6
+ 133 006a 00C0      		rjmp .L8
+  60:mouse.c       **** 
+  61:mouse.c       ****     return ADC;
+ 134               		.loc 1 61 0
+ 135 006c 84B1      		in r24,0x4
+ 136 006e 95B1      		in r25,0x4+1
+  62:mouse.c       **** }
+ 137               		.loc 1 62 0
+ 138 0070 0895      		ret
+ 139               		.cfi_endproc
+ 140               	.LFE16:
+ 142               	.global	send_uart
+ 144               	send_uart:
+ 145               	.LFB19:
+  63:mouse.c       **** 
+  64:mouse.c       **** void SendSerialLong(int64_t value) {
+  65:mouse.c       ****     char buffer[20];  // Adjust buffer size as needed
+  66:mouse.c       ****     snprintf(buffer, sizeof(buffer), "%lld", value);  // Convert long to string
+  67:mouse.c       **** 
+  68:mouse.c       ****     // Assuming you have a UART_SendString function:
+  69:mouse.c       ****     UART_SendString(buffer);  // Send the formatted string
+  70:mouse.c       **** }
+  71:mouse.c       **** void SendSerialDouble(double value)
+  72:mouse.c       **** {
+  73:mouse.c       **** 	char buffer[10];
+  74:mouse.c       **** 	dtostrf(value,4,0,buffer);
+  75:mouse.c       **** 	//USART_SendString(str);							/* Send Name string */
+  76:mouse.c       **** 	UART_SendString(buffer);						/* Send value */
+  77:mouse.c       **** 	//USART_TxChar(unit);								/* Send unit char */
+  78:mouse.c       **** 	//USART_TxChar('\t');								/* Send tab char */
+  79:mouse.c       **** 	_delay_ms(10);
+  80:mouse.c       **** }
+  81:mouse.c       **** 
+  82:mouse.c       **** void send_uart(unsigned char val){
+ 146               		.loc 1 82 0
+ 147               		.cfi_startproc
+ 148               	/* prologue: function */
+ 149               	/* frame size = 0 */
+ 150               	/* stack size = 0 */
+ 151               	.L__stack_usage = 0
+ 152               	.LVL4:
+ 153               	.L11:
+  83:mouse.c       **** 	while ((UCSRA & (1 << UDRE)) == 0) ; 	//wait until previous transmition is finished
+ 154               		.loc 1 83 0 discriminator 1
+ 155 0072 5D9B      		sbis 0xb,5
+ 156 0074 00C0      		rjmp .L11
+  84:mouse.c       **** 	UDR = val;								//Transmit the charater
+ 157               		.loc 1 84 0
+ 158 0076 8CB9      		out 0xc,r24
+ 159 0078 0895      		ret
+ 160               		.cfi_endproc
+ 161               	.LFE19:
+ 163               	.global	UART_SendString
+ 165               	UART_SendString:
+ 166               	.LFB14:
+  35:mouse.c       **** 	unsigned char j=0;
+ 167               		.loc 1 35 0
+ 168               		.cfi_startproc
+ 169               	.LVL5:
+ 170 007a 0F93      		push r16
+ 171               	.LCFI0:
+ 172               		.cfi_def_cfa_offset 3
+ 173               		.cfi_offset 16, -2
+ 174 007c 1F93      		push r17
+ 175               	.LCFI1:
+ 176               		.cfi_def_cfa_offset 4
+ 177               		.cfi_offset 17, -3
+ 178 007e CF93      		push r28
+ 179               	.LCFI2:
+ 180               		.cfi_def_cfa_offset 5
+ 181               		.cfi_offset 28, -4
+ 182               	/* prologue: function */
+ 183               	/* frame size = 0 */
+ 184               	/* stack size = 3 */
+ 185               	.L__stack_usage = 3
+ 186 0080 8C01      		movw r16,r24
+ 187               	.LVL6:
+  36:mouse.c       **** 	
+ 188               		.loc 1 36 0
+ 189 0082 C0E0      		ldi r28,0
+ 190               	.LVL7:
+ 191               	.L15:
+  38:mouse.c       **** 	{
+ 192               		.loc 1 38 0
+ 193 0084 F801      		movw r30,r16
+ 194 0086 EC0F      		add r30,r28
+ 195 0088 F11D      		adc r31,__zero_reg__
+ 196 008a 8081      		ld r24,Z
+ 197 008c 8823      		tst r24
+ 198 008e 01F0      		breq .L17
+  40:mouse.c       **** 		j++;
+ 199               		.loc 1 40 0
+ 200 0090 0E94 0000 		call send_uart
+ 201               	.LVL8:
+  41:mouse.c       **** 	}
+ 202               		.loc 1 41 0
+ 203 0094 CF5F      		subi r28,lo8(-(1))
+ 204               	.LVL9:
+ 205 0096 00C0      		rjmp .L15
+ 206               	.L17:
+ 207               	/* epilogue start */
+  43:mouse.c       **** 
+ 208               		.loc 1 43 0
+ 209 0098 CF91      		pop r28
+ 210               	.LVL10:
+ 211 009a 1F91      		pop r17
+ 212 009c 0F91      		pop r16
+ 213               	.LVL11:
+ 214 009e 0895      		ret
+ 215               		.cfi_endproc
+ 216               	.LFE14:
+ 218               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 219               	.LC0:
+ 220 0000 256C 6C64 		.string	"%lld"
+ 220      00
+ 221               		.text
+ 222               	.global	SendSerialLong
+ 224               	SendSerialLong:
+ 225               	.LFB17:
+  64:mouse.c       ****     char buffer[20];  // Adjust buffer size as needed
+ 226               		.loc 1 64 0
+ 227               		.cfi_startproc
+ 228               	.LVL12:
+ 229 00a0 0F93      		push r16
+ 230               	.LCFI3:
+ 231               		.cfi_def_cfa_offset 3
+ 232               		.cfi_offset 16, -2
+ 233 00a2 1F93      		push r17
+ 234               	.LCFI4:
+ 235               		.cfi_def_cfa_offset 4
+ 236               		.cfi_offset 17, -3
+ 237 00a4 CF93      		push r28
+ 238               	.LCFI5:
+ 239               		.cfi_def_cfa_offset 5
+ 240               		.cfi_offset 28, -4
+ 241 00a6 DF93      		push r29
+ 242               	.LCFI6:
+ 243               		.cfi_def_cfa_offset 6
+ 244               		.cfi_offset 29, -5
+ 245 00a8 CDB7      		in r28,__SP_L__
+ 246 00aa DEB7      		in r29,__SP_H__
+ 247               	.LCFI7:
+ 248               		.cfi_def_cfa_register 28
+ 249 00ac 6497      		sbiw r28,20
+ 250               	.LCFI8:
+ 251               		.cfi_def_cfa_offset 26
+ 252 00ae 0FB6      		in __tmp_reg__,__SREG__
+ 253 00b0 F894      		cli
+ 254 00b2 DEBF      		out __SP_H__,r29
+ 255 00b4 0FBE      		out __SREG__,__tmp_reg__
+ 256 00b6 CDBF      		out __SP_L__,r28
+ 257               	/* prologue: function */
+ 258               	/* frame size = 20 */
+ 259               	/* stack size = 24 */
+ 260               	.L__stack_usage = 24
+  66:mouse.c       **** 
+ 261               		.loc 1 66 0
+ 262 00b8 9F93      		push r25
+ 263 00ba 8F93      		push r24
+ 264 00bc 7F93      		push r23
+ 265 00be 6F93      		push r22
+ 266 00c0 5F93      		push r21
+ 267 00c2 4F93      		push r20
+ 268 00c4 3F93      		push r19
+ 269 00c6 2F93      		push r18
+ 270 00c8 80E0      		ldi r24,lo8(.LC0)
+ 271 00ca 90E0      		ldi r25,hi8(.LC0)
+ 272 00cc 9F93      		push r25
+ 273 00ce 8F93      		push r24
+ 274 00d0 1F92      		push __zero_reg__
+ 275 00d2 84E1      		ldi r24,lo8(20)
+ 276 00d4 8F93      		push r24
+ 277 00d6 8E01      		movw r16,r28
+ 278 00d8 0F5F      		subi r16,-1
+ 279 00da 1F4F      		sbci r17,-1
+ 280 00dc 1F93      		push r17
+ 281 00de 0F93      		push r16
+ 282 00e0 0E94 0000 		call snprintf
+ 283               	.LVL13:
+  69:mouse.c       **** }
+ 284               		.loc 1 69 0
+ 285 00e4 C801      		movw r24,r16
+ 286 00e6 0E94 0000 		call UART_SendString
+ 287               	.LVL14:
+  70:mouse.c       **** void SendSerialDouble(double value)
+ 288               		.loc 1 70 0
+ 289 00ea 0FB6      		in __tmp_reg__,__SREG__
+ 290 00ec F894      		cli
+ 291 00ee DEBF      		out __SP_H__,r29
+ 292 00f0 0FBE      		out __SREG__,__tmp_reg__
+ 293 00f2 CDBF      		out __SP_L__,r28
+ 294               	/* epilogue start */
+ 295 00f4 6496      		adiw r28,20
+ 296 00f6 0FB6      		in __tmp_reg__,__SREG__
+ 297 00f8 F894      		cli
+ 298 00fa DEBF      		out __SP_H__,r29
+ 299 00fc 0FBE      		out __SREG__,__tmp_reg__
+ 300 00fe CDBF      		out __SP_L__,r28
+ 301 0100 DF91      		pop r29
+ 302 0102 CF91      		pop r28
+ 303 0104 1F91      		pop r17
+ 304 0106 0F91      		pop r16
+ 305 0108 0895      		ret
+ 306               		.cfi_endproc
+ 307               	.LFE17:
+ 309               	.global	SendSerialDouble
+ 311               	SendSerialDouble:
+ 312               	.LFB18:
+  72:mouse.c       **** 	char buffer[10];
+ 313               		.loc 1 72 0
+ 314               		.cfi_startproc
+ 315               	.LVL15:
+ 316 010a 0F93      		push r16
+ 317               	.LCFI9:
+ 318               		.cfi_def_cfa_offset 3
+ 319               		.cfi_offset 16, -2
+ 320 010c 1F93      		push r17
+ 321               	.LCFI10:
+ 322               		.cfi_def_cfa_offset 4
+ 323               		.cfi_offset 17, -3
+ 324 010e CF93      		push r28
+ 325               	.LCFI11:
+ 326               		.cfi_def_cfa_offset 5
+ 327               		.cfi_offset 28, -4
+ 328 0110 DF93      		push r29
+ 329               	.LCFI12:
+ 330               		.cfi_def_cfa_offset 6
+ 331               		.cfi_offset 29, -5
+ 332 0112 CDB7      		in r28,__SP_L__
+ 333 0114 DEB7      		in r29,__SP_H__
+ 334               	.LCFI13:
+ 335               		.cfi_def_cfa_register 28
+ 336 0116 2A97      		sbiw r28,10
+ 337               	.LCFI14:
+ 338               		.cfi_def_cfa_offset 16
+ 339 0118 0FB6      		in __tmp_reg__,__SREG__
+ 340 011a F894      		cli
+ 341 011c DEBF      		out __SP_H__,r29
+ 342 011e 0FBE      		out __SREG__,__tmp_reg__
+ 343 0120 CDBF      		out __SP_L__,r28
+ 344               	/* prologue: function */
+ 345               	/* frame size = 10 */
+ 346               	/* stack size = 14 */
+ 347               	.L__stack_usage = 14
+  74:mouse.c       **** 	//USART_SendString(str);							/* Send Name string */
+ 348               		.loc 1 74 0
+ 349 0122 8E01      		movw r16,r28
+ 350 0124 0F5F      		subi r16,-1
+ 351 0126 1F4F      		sbci r17,-1
+ 352 0128 20E0      		ldi r18,0
+ 353 012a 44E0      		ldi r20,lo8(4)
+ 354 012c 0E94 0000 		call dtostrf
+ 355               	.LVL16:
+  76:mouse.c       **** 	//USART_TxChar(unit);								/* Send unit char */
+ 356               		.loc 1 76 0
+ 357 0130 C801      		movw r24,r16
+ 358 0132 0E94 0000 		call UART_SendString
+ 359               	.LVL17:
+ 360               	.LBB7:
+ 361               	.LBB8:
+ 362               		.file 2 "/usr/lib/avr/include/util/delay.h"
+   1:/usr/lib/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/usr/lib/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/usr/lib/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/usr/lib/avr/include/util/delay.h ****    All rights reserved.
+   5:/usr/lib/avr/include/util/delay.h **** 
+   6:/usr/lib/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/usr/lib/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/usr/lib/avr/include/util/delay.h **** 
+   9:/usr/lib/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/usr/lib/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/usr/lib/avr/include/util/delay.h **** 
+  12:/usr/lib/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/usr/lib/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/usr/lib/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/usr/lib/avr/include/util/delay.h ****      distribution.
+  16:/usr/lib/avr/include/util/delay.h **** 
+  17:/usr/lib/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/usr/lib/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/usr/lib/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/usr/lib/avr/include/util/delay.h **** 
+  21:/usr/lib/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/usr/lib/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/usr/lib/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/usr/lib/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/usr/lib/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/usr/lib/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/usr/lib/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/usr/lib/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/usr/lib/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/usr/lib/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/usr/lib/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/usr/lib/avr/include/util/delay.h **** 
+  33:/usr/lib/avr/include/util/delay.h **** /* $Id$ */
+  34:/usr/lib/avr/include/util/delay.h **** 
+  35:/usr/lib/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/usr/lib/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/usr/lib/avr/include/util/delay.h **** 
+  38:/usr/lib/avr/include/util/delay.h **** #ifndef __DOXYGEN__
+  39:/usr/lib/avr/include/util/delay.h **** #  ifndef __HAS_DELAY_CYCLES
+  40:/usr/lib/avr/include/util/delay.h **** #    define __HAS_DELAY_CYCLES 1
+  41:/usr/lib/avr/include/util/delay.h **** #  endif
+  42:/usr/lib/avr/include/util/delay.h **** #endif  /* __DOXYGEN__ */
+  43:/usr/lib/avr/include/util/delay.h **** 
+  44:/usr/lib/avr/include/util/delay.h **** #include <inttypes.h>
+  45:/usr/lib/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  46:/usr/lib/avr/include/util/delay.h **** #include <math.h>
+  47:/usr/lib/avr/include/util/delay.h **** 
+  48:/usr/lib/avr/include/util/delay.h **** /** \file */
+  49:/usr/lib/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  50:/usr/lib/avr/include/util/delay.h ****     \code
+  51:/usr/lib/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  52:/usr/lib/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  53:/usr/lib/avr/include/util/delay.h ****     #include <util/delay.h>
+  54:/usr/lib/avr/include/util/delay.h ****     \endcode
+  55:/usr/lib/avr/include/util/delay.h **** 
+  56:/usr/lib/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  57:/usr/lib/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  58:/usr/lib/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  59:/usr/lib/avr/include/util/delay.h ****     used.
+  60:/usr/lib/avr/include/util/delay.h **** 
+  61:/usr/lib/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  62:/usr/lib/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  63:/usr/lib/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  64:/usr/lib/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  65:/usr/lib/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  66:/usr/lib/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  67:/usr/lib/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  68:/usr/lib/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  69:/usr/lib/avr/include/util/delay.h **** 
+  70:/usr/lib/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  71:/usr/lib/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  72:/usr/lib/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  73:/usr/lib/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  74:/usr/lib/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  75:/usr/lib/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  76:/usr/lib/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  77:/usr/lib/avr/include/util/delay.h ****     routines linked into the application.
+  78:/usr/lib/avr/include/util/delay.h **** 
+  79:/usr/lib/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  80:/usr/lib/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  81:/usr/lib/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  82:/usr/lib/avr/include/util/delay.h **** 
+  83:/usr/lib/avr/include/util/delay.h **** */
+  84:/usr/lib/avr/include/util/delay.h **** 
+  85:/usr/lib/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  86:/usr/lib/avr/include/util/delay.h **** static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
+  87:/usr/lib/avr/include/util/delay.h **** static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
+  88:/usr/lib/avr/include/util/delay.h **** #endif
+  89:/usr/lib/avr/include/util/delay.h **** 
+  90:/usr/lib/avr/include/util/delay.h **** #ifndef F_CPU
+  91:/usr/lib/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  92:/usr/lib/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  93:/usr/lib/avr/include/util/delay.h **** /** \ingroup util_delay
+  94:/usr/lib/avr/include/util/delay.h ****     \def F_CPU
+  95:/usr/lib/avr/include/util/delay.h ****     \brief CPU frequency in Hz
+  96:/usr/lib/avr/include/util/delay.h **** 
+  97:/usr/lib/avr/include/util/delay.h ****     The macro F_CPU specifies the CPU frequency to be considered by
+  98:/usr/lib/avr/include/util/delay.h ****     the delay macros.  This macro is normally supplied by the
+  99:/usr/lib/avr/include/util/delay.h ****     environment (e.g. from within a project header, or the project's
+ 100:/usr/lib/avr/include/util/delay.h ****     Makefile).  The value 1 MHz here is only provided as a "vanilla"
+ 101:/usr/lib/avr/include/util/delay.h ****     fallback if no such user-provided definition could be found.
+ 102:/usr/lib/avr/include/util/delay.h **** 
+ 103:/usr/lib/avr/include/util/delay.h ****     In terms of the delay functions, the CPU frequency can be given as
+ 104:/usr/lib/avr/include/util/delay.h ****     a floating-point constant (e.g. 3.6864E6 for 3.6864 MHz).
+ 105:/usr/lib/avr/include/util/delay.h ****     However, the macros in <util/setbaud.h> require it to be an
+ 106:/usr/lib/avr/include/util/delay.h ****     integer value.
+ 107:/usr/lib/avr/include/util/delay.h ****  */
+ 108:/usr/lib/avr/include/util/delay.h **** # define F_CPU 1000000UL
+ 109:/usr/lib/avr/include/util/delay.h **** #endif
+ 110:/usr/lib/avr/include/util/delay.h **** 
+ 111:/usr/lib/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+ 112:/usr/lib/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+ 113:/usr/lib/avr/include/util/delay.h **** #endif
+ 114:/usr/lib/avr/include/util/delay.h **** 
+ 115:/usr/lib/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 116:/usr/lib/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 117:/usr/lib/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 118:/usr/lib/avr/include/util/delay.h **** #  include <math.h>
+ 119:/usr/lib/avr/include/util/delay.h **** #endif
+ 120:/usr/lib/avr/include/util/delay.h **** 
+ 121:/usr/lib/avr/include/util/delay.h **** /**
+ 122:/usr/lib/avr/include/util/delay.h ****    \ingroup util_delay
+ 123:/usr/lib/avr/include/util/delay.h **** 
+ 124:/usr/lib/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 125:/usr/lib/avr/include/util/delay.h **** 
+ 126:/usr/lib/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 127:/usr/lib/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 128:/usr/lib/avr/include/util/delay.h **** 
+ 129:/usr/lib/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 130:/usr/lib/avr/include/util/delay.h **** 
+ 131:/usr/lib/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 132:/usr/lib/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 133:/usr/lib/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 134:/usr/lib/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 135:/usr/lib/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 136:/usr/lib/avr/include/util/delay.h **** 
+ 137:/usr/lib/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles()
+ 138:/usr/lib/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 139:/usr/lib/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 140:/usr/lib/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 141:/usr/lib/avr/include/util/delay.h **** 
+ 142:/usr/lib/avr/include/util/delay.h ****    Conversion of \c __ms into clock cycles may not always result in
+ 143:/usr/lib/avr/include/util/delay.h ****    integer.  By default, the clock cycles rounded up to next
+ 144:/usr/lib/avr/include/util/delay.h ****    integer. This ensures that the user gets at least \c __ms
+ 145:/usr/lib/avr/include/util/delay.h ****    microseconds of delay.
+ 146:/usr/lib/avr/include/util/delay.h **** 
+ 147:/usr/lib/avr/include/util/delay.h ****    Alternatively, by defining the macro \c __DELAY_ROUND_DOWN__, or
+ 148:/usr/lib/avr/include/util/delay.h ****    \c __DELAY_ROUND_CLOSEST__, before including this header file, the
+ 149:/usr/lib/avr/include/util/delay.h ****    algorithm can be made to round down, or round to closest integer,
+ 150:/usr/lib/avr/include/util/delay.h ****    respectively.
+ 151:/usr/lib/avr/include/util/delay.h **** 
+ 152:/usr/lib/avr/include/util/delay.h ****    \note
+ 153:/usr/lib/avr/include/util/delay.h **** 
+ 154:/usr/lib/avr/include/util/delay.h ****    The implementation of _delay_ms() based on
+ 155:/usr/lib/avr/include/util/delay.h ****    __builtin_avr_delay_cycles() is not backward compatible with older
+ 156:/usr/lib/avr/include/util/delay.h ****    implementations.  In order to get functionality backward compatible
+ 157:/usr/lib/avr/include/util/delay.h ****    with previous versions, the macro \c "__DELAY_BACKWARD_COMPATIBLE__"
+ 158:/usr/lib/avr/include/util/delay.h ****    must be defined before including this header file. Also, the
+ 159:/usr/lib/avr/include/util/delay.h ****    backward compatible algorithm will be chosen if the code is
+ 160:/usr/lib/avr/include/util/delay.h ****    compiled in a <em>freestanding environment</em> (GCC option
+ 161:/usr/lib/avr/include/util/delay.h ****    \c -ffreestanding), as the math functions required for rounding are
+ 162:/usr/lib/avr/include/util/delay.h ****    not available to the compiler then.
+ 163:/usr/lib/avr/include/util/delay.h **** 
+ 164:/usr/lib/avr/include/util/delay.h ****  */
+ 165:/usr/lib/avr/include/util/delay.h **** void
+ 166:/usr/lib/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 167:/usr/lib/avr/include/util/delay.h **** {
+ 168:/usr/lib/avr/include/util/delay.h **** 	double __tmp ;
+ 169:/usr/lib/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 170:/usr/lib/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 171:/usr/lib/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 172:/usr/lib/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 173:/usr/lib/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 174:/usr/lib/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 175:/usr/lib/avr/include/util/delay.h **** 
+ 176:/usr/lib/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 177:/usr/lib/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 178:/usr/lib/avr/include/util/delay.h **** 
+ 179:/usr/lib/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 180:/usr/lib/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 181:/usr/lib/avr/include/util/delay.h **** 
+ 182:/usr/lib/avr/include/util/delay.h **** 	#else
+ 183:/usr/lib/avr/include/util/delay.h **** 		//round up by default
+ 184:/usr/lib/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 185:/usr/lib/avr/include/util/delay.h **** 	#endif
+ 186:/usr/lib/avr/include/util/delay.h **** 
+ 187:/usr/lib/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 363               		.loc 2 187 0
+ 364 0136 8FE1      		ldi r24,lo8(19999)
+ 365 0138 9EE4      		ldi r25,hi8(19999)
+ 366 013a 0197      	1:	sbiw r24,1
+ 367 013c 01F4      		brne 1b
+ 368 013e 00C0      		rjmp .
+ 369 0140 0000      		nop
+ 370               	.LVL18:
+ 371               	/* epilogue start */
+ 372               	.LBE8:
+ 373               	.LBE7:
+  80:mouse.c       **** 
+ 374               		.loc 1 80 0
+ 375 0142 2A96      		adiw r28,10
+ 376 0144 0FB6      		in __tmp_reg__,__SREG__
+ 377 0146 F894      		cli
+ 378 0148 DEBF      		out __SP_H__,r29
+ 379 014a 0FBE      		out __SREG__,__tmp_reg__
+ 380 014c CDBF      		out __SP_L__,r28
+ 381 014e DF91      		pop r29
+ 382 0150 CF91      		pop r28
+ 383 0152 1F91      		pop r17
+ 384 0154 0F91      		pop r16
+ 385 0156 0895      		ret
+ 386               		.cfi_endproc
+ 387               	.LFE18:
+ 389               	.global	UART_TxChar
+ 391               	UART_TxChar:
+ 392               	.LFB22:
+ 393               		.cfi_startproc
+ 394               	/* prologue: function */
+ 395               	/* frame size = 0 */
+ 396               	/* stack size = 0 */
+ 397               	.L__stack_usage = 0
+ 398 0158 0C94 0000 		jmp send_uart
+ 399               		.cfi_endproc
+ 400               	.LFE22:
+ 402               	.global	__floatsisf
+ 403               		.section	.text.startup,"ax",@progbits
+ 404               	.global	main
+ 406               	main:
+ 407               	.LFB20:
+  85:mouse.c       **** }
+  86:mouse.c       **** int main(void) {
+ 408               		.loc 1 86 0
+ 409               		.cfi_startproc
+ 410               	/* prologue: function */
+ 411               	/* frame size = 0 */
+ 412               	/* stack size = 0 */
+ 413               	.L__stack_usage = 0
+  87:mouse.c       ****    	char c;
+  88:mouse.c       ****     	ADC_Init();
+ 414               		.loc 1 88 0
+ 415 0000 0E94 0000 		call ADC_Init
+ 416               	.LVL19:
+  89:mouse.c       **** 	USART_Init(9600);					/* Initialize USART with 9600 Baud rate */
+ 417               		.loc 1 89 0
+ 418 0004 60E8      		ldi r22,lo8(-128)
+ 419 0006 75E2      		ldi r23,lo8(37)
+ 420 0008 80E0      		ldi r24,0
+ 421 000a 90E0      		ldi r25,0
+ 422 000c 0E94 0000 		call USART_Init
+ 423               	.LVL20:
+ 424               	.L22:
+ 425               	.LBB9:
+  90:mouse.c       **** 	char buffer[50];
+  91:mouse.c       ****     	while (1) {
+  92:mouse.c       ****         	double adcX = ADC_Read(1); //get PA0
+ 426               		.loc 1 92 0 discriminator 1
+ 427 0010 81E0      		ldi r24,lo8(1)
+ 428 0012 0E94 0000 		call ADC_Read
+ 429               	.LVL21:
+  93:mouse.c       **** 		SendSerialDouble(adcX);
+ 430               		.loc 1 93 0 discriminator 1
+ 431 0016 BC01      		movw r22,r24
+ 432 0018 990F      		lsl r25
+ 433 001a 880B      		sbc r24,r24
+ 434 001c 990B      		sbc r25,r25
+ 435 001e 0E94 0000 		call __floatsisf
+ 436               	.LVL22:
+ 437 0022 0E94 0000 		call SendSerialDouble
+ 438               	.LVL23:
+ 439               	.LBB10:
+ 440               	.LBB11:
+ 441               		.loc 2 187 0 discriminator 1
+ 442 0026 2FE7      		ldi r18,lo8(143999)
+ 443 0028 82E3      		ldi r24,hi8(143999)
+ 444 002a 92E0      		ldi r25,hlo8(143999)
+ 445 002c 2150      	1:	subi r18,1
+ 446 002e 8040      		sbci r24,0
+ 447 0030 9040      		sbci r25,0
+ 448 0032 01F4      		brne 1b
+ 449 0034 00C0      		rjmp .
+ 450 0036 0000      		nop
+ 451 0038 00C0      		rjmp .L22
+ 452               	.LBE11:
+ 453               	.LBE10:
+ 454               	.LBE9:
+ 455               		.cfi_endproc
+ 456               	.LFE20:
+ 458               	.global	oldY
+ 459               		.section .bss
+ 462               	oldY:
+ 463 0000 0000 0000 		.zero	4
+ 464               	.global	oldX
+ 467               	oldX:
+ 468 0004 0000 0000 		.zero	4
+ 469               		.text
+ 470               	.Letext0:
+ 471               		.file 3 "/usr/lib/avr/include/stdint.h"
+ 472               		.file 4 "/usr/lib/avr/include/stdio.h"
+ 473               		.file 5 "/usr/lib/avr/include/stdlib.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 mouse.c
+     /tmp/cc2X2iWS.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cc2X2iWS.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cc2X2iWS.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cc2X2iWS.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cc2X2iWS.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cc2X2iWS.s:12     .text:0000000000000000 USART_Init
+     /tmp/cc2X2iWS.s:67     .text:0000000000000046 UART_RxChar
+     /tmp/cc2X2iWS.s:88     .text:000000000000004e ADC_Init
+     /tmp/cc2X2iWS.s:112    .text:000000000000005c ADC_Read
+     /tmp/cc2X2iWS.s:144    .text:0000000000000072 send_uart
+     /tmp/cc2X2iWS.s:165    .text:000000000000007a UART_SendString
+     /tmp/cc2X2iWS.s:224    .text:00000000000000a0 SendSerialLong
+     /tmp/cc2X2iWS.s:311    .text:000000000000010a SendSerialDouble
+     /tmp/cc2X2iWS.s:391    .text:0000000000000158 UART_TxChar
+     /tmp/cc2X2iWS.s:406    .text.startup:0000000000000000 main
+     /tmp/cc2X2iWS.s:462    .bss:0000000000000000 oldY
+     /tmp/cc2X2iWS.s:467    .bss:0000000000000004 oldX
+
+UNDEFINED SYMBOLS
+__udivmodsi4
+snprintf
+dtostrf
+__floatsisf
+__do_copy_data
+__do_clear_bss

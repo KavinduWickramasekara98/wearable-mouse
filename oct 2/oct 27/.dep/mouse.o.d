@@ -1,0 +1,1 @@
+mouse.o: mouse.c
