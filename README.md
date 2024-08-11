@@ -13,9 +13,9 @@ This wearable mouse allows users to control the cursor by moving just one finger
 ##Images
 <details>
   <summary>3d model and working way</summary>
-  <img src="images/overview.jpg" width=15% height=15%>
-  <img src="images/darkView.jpg" width=15% height=15%>
-  <img src="images/wear.jpg" width=15% height=15%>
+  <img src="images/overview.jpg" width=25% height=25%>
+  <img src="images/darkView.jpg" width=25% height=25%>
+  <img src="images/wear.jpg" width=25% height=25%>
 </details>
 
 <details>
