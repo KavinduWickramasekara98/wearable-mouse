@@ -22,7 +22,7 @@ This wearable mouse allows users to control the cursor by moving just one finger
   <summary>Developing images</summary>
   <img src="images/ringonlywear.jpg" width=35% height=35%>
   <img src="images/development1.jpg" width=35% height=35%>
-  <img src="images/development2.jpg" width=35% height=35%>
+  <img src="images/developmet2.jpg" width=35% height=35%>
   
 </details>
 
