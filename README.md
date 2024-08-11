@@ -20,22 +20,22 @@ This wearable mouse allows users to control the cursor by moving just one finger
 
 <details>
   <summary>Developing images</summary>
-    ![ringonlywear](images/ringonlywear.jpg)
-    ![development1](images/development1.jpg)
-    ![developmet2](images/development2.jpg)
+  <img src="images/ringonlywear.jpg" width=35% height=35%>
+  <img src="images/development1.jpg" width=35% height=35%>
+  <img src="images/development2.jpg" width=35% height=35%>
+  
 </details>
 
 <details>
   <summary>circuit</summary>
-    ![circuit1](images/circuit1.jpg)
+    <img src="images/circuit1.jpg" width=35% height=35%>
   </details>
 <details>
   <summary>3D model</summary>
-    ![3dmodleRing](images/3dmodleRing.jpg)
-    ![3dmodleBOX](images/3dmodleBOX.jpg)
-    ![printing3D](images/printing3D.jpg)
-    ![ring](images/ring.jpg)
-
+    <img src="images/3dmodleRing.jpg" width=35% height=35%>
+    <img src="images/3dmodleBOX.jpg" width=35% height=35%>
+    <img src="images/printing3D.jpg" width=35% height=35%>
+    <img src="images/ring.jpg" width=35% height=35%>
   </details>
 ##How It Works
 
