@@ -13,30 +13,29 @@ This wearable mouse allows users to control the cursor by moving just one finger
 ##Images
 <details>
   <summary>3d model and working way</summary>
-    ![overview](https://github.com/user-attachments/assets/1e49ae13-09e2-4e2a-a3a9-2e7f029728d0)
-    ![darkView](https://github.com/user-attachments/assets/46dc671c-37b9-46f0-8257-5ab7eff5b978)
-    ![wear](https://github.com/user-attachments/assets/4e181342-bc45-412a-8ca9-e8775b4c164e)
+    ![overview](images/overview.jpg)
+    ![darkView](images/darkView.jpg)
+    ![wear](images/wear.jpg)
 
 </details>
 
 <details>
   <summary>Developing images</summary>
-    ![ringonlywear](https://github.com/user-attachments/assets/7b80e1f5-f021-4240-a82d-4773c13cc00f)
-    ![development1](https://github.com/user-attachments/assets/a255d658-75ee-4da8-90d2-d0396a79750f)
-    ![developmet2](https://github.com/user-attachments/assets/892eb3fe-9894-46b7-aa0a-a6d2521709db)
+    ![ringonlywear](images/ringonlywear.jpg)
+    ![development1](images/development1.jpg)
+    ![developmet2](images/development2.jpg)
 </details>
 
 <details>
   <summary>circuit</summary>
-    ![circuit1](https://github.com/user-attachments/assets/1f7e384b-f4f9-4bb6-9621-795e8689d2a9)
+    ![circuit1](images/circuit1.jpg)
   </details>
 <details>
   <summary>3D model</summary>
-    ![3dmodleRing](https://github.com/user-attachments/assets/d410fa6d-dee3-483e-8a9a-97bb8a062b6e)
-    ![3dmodleRing](https://github.com/user-attachments/assets/66c8ac4a-7b0f-4654-9472-4a52ebe2d8c2)
-    ![3dmodleBOX](https://github.com/user-attachments/assets/a89393da-22c6-4509-bf7d-298a768d6fa7)
-    ![printing3D](https://github.com/user-attachments/assets/43157dcc-e992-4c4c-bb0d-b9d72c21e2ef)
-    ![ring](https://github.com/user-attachments/assets/111a01af-343b-4c8c-b8e4-22d321e5a476)
+    ![3dmodleRing](images/3dmodleRing.jpg)
+    ![3dmodleBOX](images/3dmodleBOX.jpg)
+    ![printing3D](images/printing3D.jpg)
+    ![ring](images/ring.jpg)
 
   </details>
 ##How It Works
