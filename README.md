@@ -37,6 +37,7 @@ This wearable mouse allows users to control the cursor by moving just one finger
     <img src="images/printing3D.png" width=35% height=35%>
     <img src="images/ring.png" width=35% height=35%>
   </details>
+  
 ## How It Works
 
 ### Data Flow
