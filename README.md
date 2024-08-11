@@ -1,16 +1,16 @@
-#Wearable Ring Mouse
+# Wearable Ring Mouse
 
-##Introduction
+## Introduction
 In the world of modern computing, the need for more intuitive and portable computer input devices has become increasingly pronounced. The traditional computer mouse, while a reliable tool for navigating digital landscapes, comes with inherent limitations that impact the user experience. This project introduces a wearable ring mouse that addresses these limitations, offering a new level of convenience and accessibility.
 
-##Problem Statement
+## Problem Statement
 Using One Hand for the Mouse?
 Can a Person Who Can Only Use Their Fingers Operate the Mouse?
 Do We Need a Table to Use This Mouse?
-Wearable Mouse Solution
+## Wearable Mouse Solution
 This wearable mouse allows users to control the cursor by moving just one finger and perform right-click and left-click actions using the same finger. By using two fingers, users can move the cursor, eliminating the need for a table to operate the mouse. With this wearable mouse, users can control the cursor without moving the entire hand.
 
-##Images
+## Images
 <details>
   <summary>3d model and working way</summary>
   <img src="images/overview.jpg" width=35% height=35%>
@@ -37,14 +37,14 @@ This wearable mouse allows users to control the cursor by moving just one finger
     <img src="images/printing3D.png" width=35% height=35%>
     <img src="images/ring.png" width=35% height=35%>
   </details>
-##How It Works
+## How It Works
 
-###Data Flow
+### Data Flow
 Get Data: The ring collects movement data.
 Microcontroller: The ATmega32 processes this data.
 Send Data: The processed data is sent to the computer for cursor control.
 
-###Measurements
+### Measurements
 X and Y Axis: The ring measures the X and Y-axis movements to control the cursor on the computer screen.
 Functionalities
 Cursor Movement: Capturing X and Y-axis data for cursor movement.
@@ -52,7 +52,7 @@ Start Button: Activating the mouse functionality.
 Left-Click Button: Executing a left-click action.
 Right-Click Button: Executing a right-click action.
 
-###Components
+### Components
 ATmega32 Microcontroller
 The ATmega32 microcontroller is selected for its cost-effectiveness, low power consumption, and ease of programming. It is the core component that processes data from the sensors and facilitates communication with the computer.
 
@@ -67,7 +67,7 @@ An IR LED and photodiode are integrated for distance measurement, offering a cos
 
 Circuit Diagram
 
-###Process
+### Process
 Data Acquisition: The ATmega32 microcontroller reads data from the photodiode, using its ADC (Analog-to-Digital Converter) to convert analog signals into digital data.
 
 Data Processing: The microcontroller processes the captured data and prepares it for transmission to the computer.
@@ -81,7 +81,7 @@ PyAutoGUI Module
 Time Module
 By leveraging these Python modules, the wearable device data is seamlessly transformed into cursor movements on the computer screen, providing a smooth user experience.
 
-###Challenges
+### Challenges
 Finding the Perfect Sensor: Identifying a suitable sensor for accurate finger movement detection.
 Dealing with Long Wire Connections: Managing the complexity of long wire connections within the wearable device.
 Integrating Components into the Ring: Ensuring all components fit comfortably within the ring design.
